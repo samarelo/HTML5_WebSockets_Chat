@@ -1,37 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>WebSocket Messager</title>
+<title>WebSocket Messenger</title>
 </head>
 <body>
 
-UserName<input id="input_username" type="text"></input>
+UserName<input id="input_username" type="text" onkeypress="chkEnter_wsConnect(event)" />
 <button id="btn_connect" onclick="wsConnect()">Connect</button>
-<button id="btn_disconnect" style="display:none;">Disconnect TODO</button>
+<button id="btn_disconnect" onclick="wsDisconnect()" style="display:none;">Disconnect TODO</button>
 
 
 <div id="output"></div>
-<input id="input_message" type="text" style="display:none;"></input>
-<button id="btn_send" onclick="wsSend()" style="display:none;">Send TODO</button>
+<input id="input_message" type="text" style="display:none;" onkeypress="chkEnter_wsSend(event)" />
+<button id="btn_send" onclick="wsSend()" style="display:none;">Send</button>
 
 <script type="text/javascript">
-	var _SRVHOST_;	// <---- THIS MUST BE SET
+	var _SRVHOST_ = "";// <---- THIS MUST BE SET
 	var _SRVPORT_ = 8000;
 	var username;
 	var ws;
+    var selfterminated;
+    
+    function wsDisconnect(){
+        if (ws){
+            ws.close();
+            resetElements();
+        }
+    }
+    
 	function wsConnect(){
-		ws = new WebSocket("ws://"+_SRVHOST_+":"+_SRVPORT_);
+		var inUser = document.getElementById("input_username");
+		username=inUser.value;
+        console.log("username provided =>"+username);
+		if (username.trim()==""){
+            console.log("Warning: No username provided");
+            // tell user provide username
+            return;
+        }
+        
+   		ws = new WebSocket("ws://"+_SRVHOST_+":"+_SRVPORT_);
 		ws.onopen = function(){
-			var inUser = document.getElementById("input_username");
-			username=inUser.value;
-			console.log(username);
 			var msg ={type:"hello",client:username};
 			ws.send(JSON.stringify(msg));
 
 			//disable username and hide Connect
 			inUser.setAttribute("disabled");
 			document.getElementById("btn_connect").style.display = "none";
-			document.getElementById("btn_disconnect").style.display = "inline";
+//			document.getElementById("btn_disconnect").style.display = "inline";
 			document.getElementById("input_message").style.display = "inline";
 			document.getElementById("btn_send").style.display = "inline";
 		}
@@ -42,31 +57,55 @@ UserName<input id="input_username" type="text"></input>
 			var jsO = JSON.parse(event.data);
 			switch(jsO.type){
 				case "message": // received message //
-						document.getElementById("output").innerHTML+="<br />"+jsO.client+":"+jsO.data;
-						
+						document.getElementById("output").innerHTML+="<p class='message'>"+jsO.client+":"+jsO.data+"</p>";
 						break;
+                case "ws-message": // received server message //
+						document.getElementById("output").innerHTML+="<p class='ws-message'>"+jsO.data+"</p>";
+                        break;
+                case "goodbye": // client is asked to close connection //
+                        ws.close();
 
 			}
 
 		}
 
 		ws.onclose = function(event){
-			document.getElementById("output").innerHTML+="<br />Socket Terminated";
-			document.getElementById("btn_connect").style.display = "inline";
-			document.getElementById("input_username").removeAttribute("disabled");
+            resetElements();
 		}
 	}
 
 	function wsSend(){
 		if(ws){
-			var msg = document.getElementById("input_message").value;
+            var ele = document.getElementById("input_message");
+			var msg = ele.value;
 			var msgJSON={
 				type:"message",
 				client:username,
 				data:msg};		
-			ws.send(JSON.stringify(msgJSON));	
+			ws.send(JSON.stringify(msgJSON));
+            ele.value ="";
 		}
 	}
+
+	// track when enter key is hit
+    function chkEnter_wsConnect(event){
+//        console.log(event.which);
+        if (event.which==13) wsConnect();
+    }   
+    
+	// track whe nenter key is hit
+    function chkEnter_wsSend(event){
+        if (event.which==13) wsSend();
+    }
+    
+	// reset elements to original states
+    function resetElements(){
+        document.getElementById("output").innerHTML+="<p>Connection Close</p>";
+		document.getElementById("btn_connect").style.display = "inline";
+		document.getElementById("input_username").removeAttribute("disabled");
+//        document.getElementById("btn_disconnect").style.display = "none";
+
+    }
 
 </script>
 </body>
