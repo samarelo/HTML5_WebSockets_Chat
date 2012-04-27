@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WebSocket Messager</title>
+</head>
+<body>
+
+UserName<input id="input_username" type="text"></input>
+<button id="btn_connect" onclick="wsConnect()">Connect</button>
+<button id="btn_disconnect" style="display:none;">Disconnect TODO</button>
+
+
+<div id="output"></div>
+<input id="input_message" type="text" style="display:none;"></input>
+<button id="btn_send" onclick="wsSend()" style="display:none;">Send TODO</button>
+
+<script type="text/javascript">
+	var _SRVHOST_;	// <---- THIS MUST BE SET
+	var _SRVPORT_ = 8000;
+	var username;
+	var ws;
+	function wsConnect(){
+		ws = new WebSocket("ws://"+_SRVHOST_+":"+_SRVPORT_);
+		ws.onopen = function(){
+			var inUser = document.getElementById("input_username");
+			username=inUser.value;
+			console.log(username);
+			var msg ={type:"hello",client:username};
+			ws.send(JSON.stringify(msg));
+
+			//disable username and hide Connect
+			inUser.setAttribute("disabled");
+			document.getElementById("btn_connect").style.display = "none";
+			document.getElementById("btn_disconnect").style.display = "inline";
+			document.getElementById("input_message").style.display = "inline";
+			document.getElementById("btn_send").style.display = "inline";
+		}
+
+		ws.onmessage = function(event){
+		/* All event.data should be in JSON string form */
+			console.log(event.data);
+			var jsO = JSON.parse(event.data);
+			switch(jsO.type){
+				case "message": // received message //
+						document.getElementById("output").innerHTML+="<br />"+jsO.client+":"+jsO.data;
+						
+						break;
+
+			}
+
+		}
+
+		ws.onclose = function(event){
+			document.getElementById("output").innerHTML+="<br />Socket Terminated";
+			document.getElementById("btn_connect").style.display = "inline";
+			document.getElementById("input_username").removeAttribute("disabled");
+		}
+	}
+
+	function wsSend(){
+		if(ws){
+			var msg = document.getElementById("input_message").value;
+			var msgJSON={
+				type:"message",
+				client:username,
+				data:msg};		
+			ws.send(JSON.stringify(msgJSON));	
+		}
+	}
+
+</script>
+</body>
+</html>
