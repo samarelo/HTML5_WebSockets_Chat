@@ -5,6 +5,7 @@ Concept project to demonstrate HTML5 with WebSockets capabilities - Chat client 
 
 
 Folder structure:
+
 	- server
 		This will hold all server related files and code
 
