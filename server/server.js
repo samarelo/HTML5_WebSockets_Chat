@@ -9,26 +9,32 @@ var clients_name =[];
 
 /* All sent/received messages should be sent in JSON string form
 
-Received Message Form
-JSON message is defined as follows
-	type	Type of message
-		"hello" = connection made
-		"goodbye" = connection close
-		"message" = message
-	
-	client	UID of client that sent data
-	
-	data	(optional) actual message 
+example of messages that can be received:
+
+	type:"message"
+	client:<client that sent message>
+	data:<message>
+
+	type:"hello"
+	client:<client connecting to server>
+
+	type="goodbye"
+	client:<client disconnecting>
 
 
+messages that can be sent from server
 
-Sent Message Form
-	type
-		"message" = message 
-		"ws-message" = message from server
-	sender	who sent the message  	
+	type:"message"
+	client:<client that sent message"
+	data:<message"
 
-	data	actual message	
+	type:"whoisonline"
+	data:<array of clients"
+	[broadcasted when a client connects or disconnects]
+
+	type:"ws-message"
+	data:<message sent from server>
+
 */
 
 wss.on('connection', function(ws){
@@ -40,15 +46,27 @@ wss.on('connection', function(ws){
 	ws.send('{"type":"ws-message","data":"Welcome"}');
 
 	ws.on('message', function(JSONmessage){
-
 		var jsO=JSON.parse(JSONmessage);
 		console.log(jsO);
 		switch(jsO.type){
 			case "hello":	console.log("hello "+jsO.client);
 					// update client's array
-					username=jsO.client;
-					if (clients_name.length>0) ws.send('{"type":"ws-message","data":"These users are online: '+clients_name+'"}');
-					clients_name.push(username);
+					var tmpname = jsO.client;
+					if (clients_name.indexOf(tmpname)>=0){
+						console.log(tmpname+" is already taken::"+clients_name);
+						var msgJSON={
+							type:"ws-message",
+							data:'Username "'+tmpname+'" is taken'};
+						ws.send(JSON.stringify(msgJSON));
+						var msgJSON={type:"goodbye"};
+						ws.send(JSON.stringify(msgJSON));
+						// client will close socket
+					} else {
+						if (clients_name.length>0) ws.send('{"type":"ws-message","data":"These users are online: '+clients_name+'"}');
+						username = tmpname;
+						clients_name.push(username);
+						console.log("number of clients:"+clients_name.length);
+					}
 					break; 
 			case "message":	console.log(jsO.client+" sent=> "+jsO.data);
 					for (var i=0;i<clients_ws.length;i++) clients_ws[i].send(JSONmessage);
