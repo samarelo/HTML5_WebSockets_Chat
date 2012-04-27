@@ -8,7 +8,6 @@ Uses:
 messages sent to/from socket are in JSON.stringfy form
 
 
--------------------------------------------
 Messages that can be recevied by server.js
 -------------------------------------------
 Message sent between clients
@@ -31,7 +30,6 @@ Message sent from client when disconnecting
 }
 	
 
----------------------------------------
 Messages that can be sent by server.js
 ---------------------------------------
 Message relayed by server
