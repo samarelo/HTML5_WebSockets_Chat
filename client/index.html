@@ -2,17 +2,18 @@
 <html>
 <head>
 <title>WebSocket Messenger</title>
+<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 
 UserName<input id="input_username" type="text" onkeypress="chkEnter_wsConnect(event)" />
-<button id="btn_connect" onclick="wsConnect()">Connect</button>
-<button id="btn_disconnect" onclick="wsDisconnect()" style="display:none;">Disconnect TODO</button>
+<span id="btn_connect" class="button" onclick="wsConnect()">Connect</span>
+<span id="btn_disconnect" class="button" onclick="wsDisconnect()" style="display:none;">Disconnect TODO</span>
 
-
+<p></p>
 <div id="output"></div>
 <input id="input_message" type="text" style="display:none;" onkeypress="chkEnter_wsSend(event)" />
-<button id="btn_send" onclick="wsSend()" style="display:none;">Send</button>
+<span id="btn_send" class="button" onclick="wsSend()" style="display:none;">Send</span>
 
 <script type="text/javascript">
 	var _SRVHOST_ = "";// <---- THIS MUST BE SET
@@ -55,35 +56,42 @@ UserName<input id="input_username" type="text" onkeypress="chkEnter_wsConnect(ev
 		/* All event.data should be in JSON string form */
 			console.log(event.data);
 			var jsO = JSON.parse(event.data);
+			var eleOut=document.getElementById("output");
 			switch(jsO.type){
 				case "message": // received message //
-						document.getElementById("output").innerHTML+="<p class='message'>"+jsO.client+":"+jsO.data+"</p>";
-						break;
-                case "ws-message": // received server message //
-						document.getElementById("output").innerHTML+="<p class='ws-message'>"+jsO.data+"</p>";
-                        break;
-                case "goodbye": // client is asked to close connection //
-                        ws.close();
-			break;
+					// need to check if I sent message
+					var msgStyle="message";
+					if (username==jsO.client) msgStyle="my-message";	
+					eleOut.innerHTML+="<div class='"+msgStyle+"'><h1>"+jsO.client+"</h1>"+jsO.data+"</div>";
+					eleOut.scrollTop=eleOut.scrollHeight;
+					break;
+		                case "ws-message": // received server message //
+					eleOut.innerHTML+="<div class='ws-message'>"+jsO.data+"</div>";
+                        		eleOut.scrollTOp=eleOut.scrollHeight;
+					
+					break;
+                		case "goodbye": // client is asked to close connection //
+                        		ws.close();
+					break;
 			}
 
 		}
 
 		ws.onclose = function(event){
-            resetElements();
+			resetElements();
 		}
 	}
 
 	function wsSend(){
 		if(ws){
-            var ele = document.getElementById("input_message");
+           		var ele = document.getElementById("input_message");
 			var msg = ele.value;
 			var msgJSON={
 				type:"message",
 				client:username,
 				data:msg};		
 			ws.send(JSON.stringify(msgJSON));
-            ele.value ="";
+            		ele.value ="";
 		}
 	}
 
@@ -101,10 +109,9 @@ UserName<input id="input_username" type="text" onkeypress="chkEnter_wsConnect(ev
 	// reset elements to original states
     function resetElements(){
         document.getElementById("output").innerHTML+="<p>Connection Close</p>";
-		document.getElementById("btn_connect").style.display = "inline";
-		document.getElementById("input_username").removeAttribute("disabled");
+	document.getElementById("btn_connect").style.display = "inline";
+	document.getElementById("input_username").removeAttribute("disabled");
 //        document.getElementById("btn_disconnect").style.display = "none";
-
     }
 
 </script>
