@@ -1,20 +1,49 @@
-.ws-message {
-
+.button{
+	padding:3px;
+	display:inline;
+	border-radius:10px;
+	color:#222222;
+	font-weight:bold;
+	border:1px solid #BBBBBB;
+	background-image:-webkit-linear-gradient(white,#F1F1F1);
 }
 
+.button:hover{
+	background-image: -webkit-gradient(linear, left top, left bottom, from( #f6f6f6),to(#e0e0e0));
+	cursor:pointer;
+}
 
 .message{
 	color: #FFFFFF;
-	padding: 10px;
+	padding: 5px;
 	background:-webkit-gradient(linear, 0 0, 0 100%, from(#f04349), to(#c81e2b));
 	border-radius:10px;
+	max-width:300px;
 }
 
 .message h1{ 
+	padding:0px;
 	color:#000000;
 	font-size:75%;
 }
 
 .my-message{
+	color: #FFFFFF;
+	padding: 5px;
+	background: -webkit-gradient(linear, 0 0, 0 100%, from(#2E88C4), to(#075698));
+	border-radius:10px;
+	max-width:300px;
+}
 
+.my-message h1{
+	padding:0px;
+	color:#000000;
+	font-size:75%;
+}
+
+#output{
+	max-width:305px;
+	min-height:1px;
+	max-height:300px;
+	overflow-y:auto;
 }
